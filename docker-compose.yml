@@ -5,8 +5,8 @@ services:
     container_name: ${DOCKER_FAKA_CONTAINER_NAME}
     build:
       context: .
-    # ports:
-    #   - 8080:80
+    ports:
+      - 8080:80
     volumes:
       - ./acg-faka:/var/www/html
     depends_on:
