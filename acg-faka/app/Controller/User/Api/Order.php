@@ -51,9 +51,11 @@ class Order extends User
             $data = $_REQUEST;
             unset($data['s']);
         }
+        if (empty($data)) {
+            $data = json_decode(file_get_contents('php://input'),true);
+        }
         return $this->order->callback($handle, $data);
     }
-
     /**
      * @param string $tradeNo
      * @return array
