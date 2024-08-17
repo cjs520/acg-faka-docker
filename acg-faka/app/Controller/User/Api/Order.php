@@ -56,6 +56,7 @@ class Order extends User
         }
         return $this->order->callback($handle, $data);
     }
+
     /**
      * @param string $tradeNo
      * @return array
