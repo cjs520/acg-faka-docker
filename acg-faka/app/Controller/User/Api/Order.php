@@ -28,31 +28,38 @@ class Order extends User
     public function trade(): array
     {
         if (Config::get("trade_verification") == 1) {
-            if (!Captcha::check((int)$_POST['captcha'], "trade")) {
+            if (!Captcha::check((int) $_POST["captcha"], "trade")) {
                 throw new JSONException("验证码错误");
             }
             Captcha::destroy("trade");
         }
-        
-        hook(\App\Consts\Hook::USER_API_ORDER_TRADE_BEGIN, $_POST);
-        $trade = $this->order->trade($this->getUser(), $this->getUserGroup(), $_POST);
-        return $this->json(200, '下单成功', $trade);
-    }
 
+        hook(\App\Consts\Hook::USER_API_ORDER_TRADE_BEGIN, $_POST);
+        $trade = $this->order->trade(
+            $this->getUser(),
+            $this->getUserGroup(),
+            $_POST
+        );
+        return $this->json(200, "下单成功", $trade);
+    }
 
     /**
      * @return string
      */
     public function callback(): string
     {
-        $handle = $_GET['_PARAMETER'][0];
+        $handle = $_GET["_PARAMETER"][0];
         $data = $_POST;
         if (empty($data)) {
             $data = $_REQUEST;
-            unset($data['s']);
+            unset($data["s"]);
         }
         if (empty($data)) {
-            $data = json_decode(file_get_contents('php://input'),true);
+            $data = json_decode(file_get_contents("php://input"), true);
+        }
+        // 增加usdtmore的处理逻辑
+        if ($handle == "USDTMore") {
+            $data = json_decode(file_get_contents("php://input"), true);
         }
         return $this->order->callback($handle, $data);
     }
@@ -64,12 +71,16 @@ class Order extends User
     public function state(#[Post] string $tradeNo): array
     {
         $tradeNo = trim($tradeNo);
-        $order = \App\Model\Order::query()->where("trade_no", $tradeNo)->first(['id', 'trade_no', 'amount', 'status']);
+        $order = \App\Model\Order::query()
+            ->where("trade_no", $tradeNo)
+            ->first(["id", "trade_no", "amount", "status"]);
 
         if (!$order) {
-            $order = UserRecharge::query()->where("trade_no", $tradeNo)->first(['id', 'trade_no', 'amount', 'status']);
+            $order = UserRecharge::query()
+                ->where("trade_no", $tradeNo)
+                ->first(["id", "trade_no", "amount", "status"]);
         }
         //回显订单信息
-        return $this->json(200, 'success', $order->toArray());
+        return $this->json(200, "success", $order->toArray());
     }
 }
